@@ -36,7 +36,7 @@ Traditional scholarship allocation relies on rigid GPA thresholds (e.g., GPA ≥
 
 ## 🏗️ Architecture
 
-![Architecture](docs/architecture.png)
+![Architecture](seafs_architecture.png)
 
 ```mermaid
 graph TD
