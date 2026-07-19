@@ -1,0 +1,48 @@
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        C1[Scholarship Committee<br/>Web Portal]
+        C2[Mobile App<br/>Reviewer Interface]
+        C3[Batch Processing<br/>CLI Tool]
+    end
+
+    subgraph "API Gateway Layer"
+        GW[FastAPI Gateway<br/>Port 8000<br/>/docs /predict /health]
+    end
+
+    subgraph "SEAFS Core Engine"
+        FE[Fuzzy Inference<br/>Engine]
+        MF[Membership<br/>Functions]
+        RB[Rule Base<br/>25 Rules]
+        AH[Fuzzy AHP<br/>Weight Vector]
+    end
+
+    subgraph "Data Layer"
+        DB[(PostgreSQL<br/>Applicant Records)]
+        CF[Config Files<br/>membership.yaml<br/>rules.yaml]
+    end
+
+    subgraph "Observability"
+        LOG[Structured<br/>Audit Logs]
+        MET[Prometheus<br/>Metrics]
+        TRC[Distributed<br/>Tracing]
+    end
+
+    C1 --> GW
+    C2 --> GW
+    C3 --> GW
+    GW --> FE
+    FE --> MF
+    FE --> RB
+    FE --> AH
+    FE --> DB
+    FE --> CF
+    FE --> LOG
+    FE --> MET
+    FE --> TRC
+
+    style FE fill:#e1f5fe
+    style GW fill:#fff3e0
+    style DB fill:#f3e5f5
+    style LOG fill:#e8f5e9
+```
