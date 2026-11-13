@@ -46,5 +46,5 @@ def test_invalid_inputs_raise(case):
 
 def test_borderline_rule_is_human_review_flag():
     # Input values are chosen to activate a rule whose appendix consequent is Borderline.
-    result = predict_one(20, 20, 60)
+    result = predict_one(20, 20, 80)
     assert result["human_review_required"] is True
