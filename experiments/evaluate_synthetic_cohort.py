@@ -1,6 +1,9 @@
 """Reproduce the synthetic Alpha/Beta scenario using the SEAFS fuzzy engine."""
 from __future__ import annotations
 import argparse
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pathlib import Path
 import sys
 import numpy as np
