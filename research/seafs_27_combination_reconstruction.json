@@ -1,0 +1,228 @@
+{
+  "title": "SEAFS 27-combination reconstruction",
+  "status": "provisional research reconstruction; not a verbatim thesis artefact",
+  "source_note": "The submitted thesis states that two logically inconsistent combinations are mapped to Reject and Waitlist respectively, but does not identify the combinations. The appendix lists 25 combinations and omits Low/Low/Medium and Low/Medium/Medium.",
+  "inference": {
+    "Low / Low / Medium": "Reject",
+    "Low / Medium / Medium": "Waitlist"
+  },
+  "rationale": "The first combination combines low academic performance with low financial need, so Reject is the conservative outcome. The second retains low GPA but has medium financial need, so Waitlist is the less exclusionary compensatory outcome. This follows the thesis's stated compensatory intent, including the principle that financial need can offset lower GPA, but it is an inferred policy choice, not a recovered original rule.",
+  "rules": [
+    {
+      "id": "01",
+      "gpa": "Low",
+      "financial_need": "Low",
+      "recommendations": "Low",
+      "consequent": "Reject",
+      "provenance": "appendix"
+    },
+    {
+      "id": "02",
+      "gpa": "Low",
+      "financial_need": "Low",
+      "recommendations": "Medium",
+      "consequent": "Reject",
+      "provenance": "reconstructed"
+    },
+    {
+      "id": "03",
+      "gpa": "Low",
+      "financial_need": "Low",
+      "recommendations": "High",
+      "consequent": "Borderline",
+      "provenance": "appendix"
+    },
+    {
+      "id": "04",
+      "gpa": "Low",
+      "financial_need": "Medium",
+      "recommendations": "Low",
+      "consequent": "Reject",
+      "provenance": "appendix"
+    },
+    {
+      "id": "05",
+      "gpa": "Low",
+      "financial_need": "Medium",
+      "recommendations": "Medium",
+      "consequent": "Waitlist",
+      "provenance": "reconstructed"
+    },
+    {
+      "id": "06",
+      "gpa": "Low",
+      "financial_need": "Medium",
+      "recommendations": "High",
+      "consequent": "Borderline",
+      "provenance": "appendix"
+    },
+    {
+      "id": "07",
+      "gpa": "Low",
+      "financial_need": "High",
+      "recommendations": "Low",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "08",
+      "gpa": "Low",
+      "financial_need": "High",
+      "recommendations": "Medium",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "09",
+      "gpa": "Low",
+      "financial_need": "High",
+      "recommendations": "High",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "10",
+      "gpa": "Medium",
+      "financial_need": "Low",
+      "recommendations": "Low",
+      "consequent": "Reject",
+      "provenance": "appendix"
+    },
+    {
+      "id": "11",
+      "gpa": "Medium",
+      "financial_need": "Low",
+      "recommendations": "Medium",
+      "consequent": "Borderline",
+      "provenance": "appendix"
+    },
+    {
+      "id": "12",
+      "gpa": "Medium",
+      "financial_need": "Low",
+      "recommendations": "High",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "13",
+      "gpa": "Medium",
+      "financial_need": "Medium",
+      "recommendations": "Low",
+      "consequent": "Borderline",
+      "provenance": "appendix"
+    },
+    {
+      "id": "14",
+      "gpa": "Medium",
+      "financial_need": "Medium",
+      "recommendations": "Medium",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "15",
+      "gpa": "Medium",
+      "financial_need": "Medium",
+      "recommendations": "High",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "16",
+      "gpa": "Medium",
+      "financial_need": "High",
+      "recommendations": "Low",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "17",
+      "gpa": "Medium",
+      "financial_need": "High",
+      "recommendations": "Medium",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "18",
+      "gpa": "Medium",
+      "financial_need": "High",
+      "recommendations": "High",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "19",
+      "gpa": "High",
+      "financial_need": "Low",
+      "recommendations": "Low",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "20",
+      "gpa": "High",
+      "financial_need": "Low",
+      "recommendations": "Medium",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "21",
+      "gpa": "High",
+      "financial_need": "Low",
+      "recommendations": "High",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "22",
+      "gpa": "High",
+      "financial_need": "Medium",
+      "recommendations": "Low",
+      "consequent": "Waitlist",
+      "provenance": "appendix"
+    },
+    {
+      "id": "23",
+      "gpa": "High",
+      "financial_need": "Medium",
+      "recommendations": "Medium",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "24",
+      "gpa": "High",
+      "financial_need": "Medium",
+      "recommendations": "High",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "25",
+      "gpa": "High",
+      "financial_need": "High",
+      "recommendations": "Low",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "26",
+      "gpa": "High",
+      "financial_need": "High",
+      "recommendations": "Medium",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    },
+    {
+      "id": "27",
+      "gpa": "High",
+      "financial_need": "High",
+      "recommendations": "High",
+      "consequent": "Approve",
+      "provenance": "appendix"
+    }
+  ]
+}
