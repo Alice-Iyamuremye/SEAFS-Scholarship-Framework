@@ -49,9 +49,9 @@ The three inputs with three linguistic terms define 27 possible antecedent combi
 - GPA Low / Financial Need Low / Recommendations Medium.
 - GPA Low / Financial Need Medium / Recommendations Medium.
 
-The supplied pages do not assign outcomes to these two combinations, despite the thesis's earlier statement that two logically inconsistent combinations are mapped to Reject/Waitlist respectively. The matrix also uses four consequents (Reject, Borderline, Waitlist, Approve), while the general model description elsewhere names only three. Borderline's output membership function and its final-decision mapping are not specified in the supplied pages.
+The supplied pages do not assign outcomes to these two combinations, despite the thesis's earlier statement that two logically inconsistent combinations are mapped to Reject/Waitlist respectively. The matrix uses four consequents (Reject, Borderline, Waitlist, Approve), while the final thesis's general model description names only three. The author has confirmed the interpretation of Borderline as a human-review routing status, consistent with an earlier thesis draft's committee-review description. This is an interpretive reconstruction: the earlier draft's 40-to-below-70 routing range is not substituted for the final thesis's Reject/Waitlist/Approve bands (below 45; 45–68; at/above 68). The two omitted input combinations remain unresolved, and the final numerical output membership functions and aggregation details are not sufficiently specified to claim a fully executable 25-rule Mamdani implementation.
 
-For these reasons, the 25-rule matrix is now documented as source material but is not yet represented as an executable Mamdani model. The Kaggle notebook's ten-rule FIS remains a separate executable implementation. The thesis itself notes that the condensed ten-rule basis may lose granularity around boundary regions.
+For these reasons, the 25-rule matrix is documented as source material with an explicitly labelled human-review interpretation for Borderline, but is not yet represented as an executable Mamdani model. The Kaggle notebook's ten-rule FIS remains a separate executable implementation. The thesis itself notes that the condensed ten-rule basis may lose granularity around boundary regions.
 
 ## Reproducible review implementation
 
