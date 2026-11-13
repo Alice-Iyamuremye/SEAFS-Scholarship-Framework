@@ -47,8 +47,8 @@ The listed rules use four consequent labels: Reject, Borderline, Waitlist, and A
 
 Accordingly, the 25-rule table is interpreted as a rule-level routing label: a Borderline consequent sends the case to human review rather than making an automated award/rejection decision. This is a documented interpretive reconstruction, not proof that the final submitted thesis fully specified this workflow. The 25-rule matrix still cannot be represented as a fully executable Mamdani model without the final model's numerical output membership functions/aggregation details and an explicit policy for the two unlisted antecedent combinations.
 
-The two unlisted combinations remain unresolved:
-- GPA Low / Financial Need Low / Recommendations Medium.
-- GPA Low / Financial Need Medium / Recommendations Medium.
+The two unlisted combinations have now been assigned provisional outcomes in a separate reconstruction artefact, with explicit provenance labels:
+- GPA Low / Financial Need Low / Recommendations Medium → **Reject** (inferred).
+- GPA Low / Financial Need Medium / Recommendations Medium → **Waitlist** (inferred).
 
-Do not infer outcomes for these combinations. The existing notebook-aligned 10-rule engine remains a separate implementation and must not be described as this 25-rule matrix.
+Rationale: the first profile combines low academic performance with low financial need; the second retains low GPA but has moderate need, so Waitlist is the less exclusionary compensatory response. This is a reasoned reconstruction consistent with the thesis's statement that the two omitted combinations map to Reject and Waitlist respectively and with its compensatory intent. It is not evidence of the author's original assignment. See `research/seafs_27_combination_reconstruction.json`; the original 25-row transcription remains unchanged. The existing notebook-aligned 10-rule engine remains a separate implementation.
