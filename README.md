@@ -43,9 +43,15 @@ These figures are outputs of the synthetic weighted-score scenario, not results 
 
 ## Rule-base clarification
 
-The thesis Appendix A states that three inputs with three linguistic terms produce 27 possible combinations. It describes two combinations as logically inconsistent and says they are mapped to Reject/Waitlist respectively, leaving 25 effective rules. The appendix extract available in the thesis does not identify the two combinations; it lists the first ten rules and abbreviates the remaining fifteen.
+The supplementary appendix pages 45–46 supplied by the author provide all 25 listed antecedent/consequent rules. The structured transcription is stored in `research/seafs_25_rule_matrix.json`, with coverage and implementation notes in `research/SEAFS_25_RULE_MATRIX_NOTES.md`.
 
-The Kaggle notebook implements a condensed ten-rule basis. The thesis also notes that this condensation may lose granularity around boundary regions. This repository therefore distinguishes the thesis's described 25-rule design from the executable ten-rule notebook implementation. The two unspecified combinations are not invented here.
+The three inputs with three linguistic terms define 27 possible antecedent combinations. The supplied 25-rule list omits:
+- GPA Low / Financial Need Low / Recommendations Medium.
+- GPA Low / Financial Need Medium / Recommendations Medium.
+
+The supplied pages do not assign outcomes to these two combinations, despite the thesis's earlier statement that two logically inconsistent combinations are mapped to Reject/Waitlist respectively. The matrix also uses four consequents (Reject, Borderline, Waitlist, Approve), while the general model description elsewhere names only three. Borderline's output membership function and its final-decision mapping are not specified in the supplied pages.
+
+For these reasons, the 25-rule matrix is now documented as source material but is not yet represented as an executable Mamdani model. The Kaggle notebook's ten-rule FIS remains a separate executable implementation. The thesis itself notes that the condensed ten-rule basis may lose granularity around boundary regions.
 
 ## Reproducible review implementation
 
