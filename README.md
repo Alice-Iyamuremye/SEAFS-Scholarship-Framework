@@ -83,3 +83,40 @@ Potential next steps include debugging and testing the failed fuzzy simulations,
 
 **Alice Iyamuremye**  
 Research interests: explainable and trustworthy AI, fuzzy decision-support systems, algorithmic fairness, and robust machine learning.
+
+
+## 3. Unified fuzzy-engine implementation (review branch)
+
+A separate implementation is being developed in this review branch so that synthetic cohort cases can be evaluated by the same fuzzy engine used for individual predictions:
+
+- `seafs_engine.py`: membership functions, complete 27-combination rule base, weighted rule activation, rule trace, and centroid output.
+- `experiments/evaluate_synthetic_cohort.py`: recreates the Alpha/Beta synthetic cohort using seed 42 and evaluates every profile through the fuzzy engine.
+- `tests/test_seafs_engine.py`: input validation, rule coverage, weight normalization, and batch-prediction tests.
+- `README_IMPLEMENTATION_NOTES.md`: documents the methodological choices and limitations.
+
+This is an **exploratory replacement implementation**, not a claim that the original Kaggle notebook already contains these changes. The original notebook uses ten scikit-fuzzy rules for its Monte Carlo experiment and a separate weighted arithmetic score for its cohort exercise.
+
+The new implementation uses a 27-combination rule base because three linguistic levels across three inputs produce 3 × 3 × 3 = 27 combinations. The thesis's description of a 25-rule full factorial is inconsistent with that count and requires correction or a documented explanation of omitted rules.
+
+### Preliminary cohort diagnostic
+
+Using the original synthetic distributions and the new fuzzy engine, the review-branch evaluation produces:
+
+| Cohort | Applicants | Legacy GPA passes | Fuzzy-engine passes | Fuzzy pass rate |
+|---|---:|---:|---:|---:|
+| Alpha | 350 | 349 | 5 | 1.4% |
+| Beta | 150 | 57 | 144 | 96.0% |
+
+The resulting fuzzy pass-rate difference is **94.6 percentage points**. This is not a fairness improvement. It is a diagnostic showing that the current membership functions, rule mapping, criterion weights, and approval threshold produce highly different outcomes for the two deliberately different synthetic distributions. These parameters need principled calibration and sensitivity analysis before any claim about fairness or suitability can be made.
+
+The fixed criterion weights are carried over from the thesis as configuration values. The current implementation does not compute Fuzzy AHP pairwise comparisons, and its weighted geometric rule activation is an explicitly specified weighted fuzzy-AND design rather than canonical unweighted min-AND Mamdani inference.
+
+Run the review implementation with:
+
+```bash
+pip install -r requirements.txt
+pytest -q
+python experiments/evaluate_synthetic_cohort.py
+```
+
+Do not treat these preliminary outputs as final thesis results. The review implementation has not yet been reconciled with the Kaggle notebook or validated with domain experts.
