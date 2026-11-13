@@ -1,21 +1,13 @@
-# SEAFS implementation notes
+# SEAFS implementation and sensitivity notes
 
-The original Kaggle notebook uses a 10-rule scikit-fuzzy control system for its Monte Carlo section, then switches to a separate weighted arithmetic score for the 500-case cohort. The new review-branch implementation uses one 27-combination fuzzy rule base and the same prediction engine for individual and cohort evaluation.
+Appendix A states that three inputs with three linguistic terms yield 27 possible combinations. It describes two combinations as logically inconsistent and says they are mapped to Reject/Waitlist respectively, leaving 25 effective rules. The appendix extract does not identify those two combinations; its table lists R1-R10 and abbreviates the remaining 15. Do not invent the missing combinations.
 
-The criterion weights (financial need 0.50, GPA 0.30, recommendations 0.20) are fixed values reported in the thesis. The notebook does not reproduce a Fuzzy AHP pairwise-comparison calculation, so this code does not claim to calculate Fuzzy AHP weights.
+The Kaggle notebook implements a condensed 10-rule basis. The thesis itself notes that this condensation may lose granularity near boundary regions. This repository therefore distinguishes the 10-rule notebook implementation from the thesis's 25-rule design.
 
-Rule activation uses a weighted geometric conjunction of membership degrees, with configured weights as exponents. Consequents are clipped, aggregated by maximum, and defuzzified using a discrete centroid. This is an explicitly specified weighted fuzzy-AND design, not canonical unweighted min-AND Mamdani inference. The thesis and project description must use this precise terminology.
+The reproduced notebook engine uses Mamdani min-AND antecedent firing, max aggregation of clipped output membership functions, and centroid defuzzification. It preserves the notebook membership functions and the ten explicit rules. The thesis reports criterion weights (financial need 0.50, GPA 0.30, recommendations 0.20), but the notebook's 10-rule engine does not apply them; its 500-case section instead uses a separate weighted arithmetic score. This review does not silently blend the methods.
 
-The 3x3x3 linguistic combinations produce 27 possible rules. The thesis's claim of a 25-rule full factorial is mathematically inconsistent and needs correction or a documented explanation of two intentionally omitted combinations.
+The sensitivity experiment varies input membership-function breakpoints uniformly by -5, 0, and +5 points and varies the administrative pass threshold across 60, 65, 68, 70, 73, 75, and 80. It uses the same 500 synthetic profiles generated with NumPy seed 42 and applies the 10-rule engine to every profile. Criterion-weight sensitivity is not reported because the reproduced notebook engine does not use the thesis weights.
 
-## Run
+Alpha and Beta are synthetic scenarios generated from different GPA, financial-need, and recommendation distributions. Pass-rate differences are descriptive properties of this constructed scenario, not demographic fairness measurements, real-world impact, or proof of bias mitigation. Any profile for which no rule fires is returned as NoRuleFired/NaN and counted explicitly rather than silently dropped.
 
-`pip install -r requirements.txt`
-`pytest -q`
-`python experiments/evaluate_synthetic_cohort.py`
-
-The cohort script reproduces the original synthetic distributions with seed 42, converts GPA from 1.0–4.0 to 0–100, evaluates every case using the fuzzy engine, and reports subgroup pass rates and descriptive pass-rate disparity.
-
-## Limitations
-
-The weights, rule mapping, membership functions, and decision thresholds are design assumptions. The two synthetic cohorts have intentionally different input distributions, so their outcome differences are scenario diagnostics, not proof of fairness or causal effects. No real applicant data, institutional deployment, legal compliance assessment, or user study is included.
+Run with: python experiments/evaluate_synthetic_cohort.py; python experiments/sensitivity_analysis.py; pytest -q.
