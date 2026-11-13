@@ -1,86 +1,83 @@
 # SEAFS: A Conceptual Fuzzy-Logic Framework for Scholarship Eligibility Assessment
 
-**Research prototype for interpretable, uncertainty-aware scholarship decision support.**
+**A research prototype exploring fuzzy inference and synthetic scholarship-eligibility scenarios.**
 
-SEAFS explores how fuzzy logic can represent imprecise eligibility criteria and expose the reasoning behind a decision. The project accompanies the MSc thesis *A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment*.
+This repository accompanies the MSc thesis *A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment*. The Kaggle notebook contains an initial fuzzy-inference experiment and a separate synthetic-cohort scoring exercise. These should be understood as distinct computational components, not as one fully integrated evaluation pipeline.
 
-> **Research status:** This is a research prototype evaluated using synthetic data. It has not been validated in a live scholarship programme, and it does not establish legal or regulatory compliance.
+> **Research status:** The experiments use synthetic data. They do not establish real-world scholarship impact, validated fairness, or legal/regulatory compliance.
 
-## Research question
+## Research motivation
 
-Can an interpretable fuzzy-inference framework combine academic performance, financial need, and recommendation evidence while making the resulting eligibility assessment more transparent than a rigid threshold-based approach?
+Rigid eligibility cut-offs can create abrupt decisions when applicants have multiple relevant characteristics. This project explores whether fuzzy membership functions and rule-based inference can represent gradual transitions in applicant attributes and make the decision logic more inspectable.
 
-## Approach
+## Notebook and implementation
 
-The proposed framework brings together:
+The main notebook is available here:
 
-- **Mamdani fuzzy inference** to map input criteria to an eligibility assessment.
-- **Overlapping triangular and trapezoidal membership functions** to represent gradual transitions and uncertainty.
-- **Fuzzy AHP criterion weights** to express the relative importance assigned to the assessment criteria.
-- **Interpretable rule activation** so that the rules contributing to an assessment can be inspected.
-- **Python implementation**, with scikit-fuzzy used for fuzzy inference and FastAPI explored for API integration.
+- [Kaggle notebook: seafs](https://www.kaggle.com/code/aliceiyamuremye/seafs)
 
-The thesis assigns the following weights in its described configuration:
+### 1. Fuzzy-inference experiment
 
-| Criterion | Weight |
-|---|---:|
-| Financial need | 0.50 |
-| Academic performance (GPA) | 0.30 |
-| Recommendations | 0.20 |
+The notebook uses Python, NumPy, pandas, Matplotlib, and scikit-fuzzy to construct a Mamdani-style control system with:
 
-These are design choices in the evaluated framework, not universal or empirically established weights for scholarship selection.
+- Three inputs: GPA, financial need, and recommendations, each represented on a 0–100 scale.
+- One output: eligibility, also represented on a 0–100 scale.
+- Overlapping triangular and trapezoidal membership functions for Low, Medium, and High input levels.
+- Three output membership categories: Reject, Waitlist, and Approve.
+- A rule base of ten explicit fuzzy rules.
+- Centroid defuzzification through the scikit-fuzzy control-system simulation.
 
-## Evaluation design
+The notebook runs a Monte Carlo simulation using 1,000 randomly generated applicant profiles (seed 42). Its saved output reports that **950 of 1,000 profiles were successfully processed**; 50 produced no usable output and were dropped from the resulting dataframe. This is an important implementation limitation that should be resolved before describing the simulation as a complete 1,000-case evaluation.
 
-The thesis reports evaluation using:
+### 2. Synthetic cohort scoring exercise
 
-- A synthetic cohort of **500 cases**.
-- A Monte Carlo continuity simulation of **1,000 cases**.
-- Comparisons with a threshold-based baseline and alternative decision approaches.
-- Analysis of simulated eligibility outcomes and changes around decision boundaries.
+A separate notebook section generates a synthetic cohort of 500 applicants:
 
-The thesis reports a simulated disadvantaged-cohort pass rate of 86.7% for SEAFS compared with 38.0% for its legacy threshold baseline. These figures describe the synthetic experimental setup only. They should not be interpreted as evidence of real-world impact or proof of fairness.
+- Cohort Alpha: 350 profiles, generated with higher average GPA and lower average financial need.
+- Cohort Beta: 150 profiles, generated with lower average GPA and higher average financial need.
 
-## Interpretability and auditability
+This section then calculates a weighted arithmetic score using fixed weights of 0.50 for financial need, 0.30 for normalized GPA, and 0.20 for recommendations. It compares a GPA threshold baseline (GPA ≥ 3.0) with a score threshold (weighted score ≥ 70).
 
-The framework is designed to make the decision process inspectable through fuzzy membership values, rule activation, and a structured record of the reasoning contributing to an output. Interpretability is a design objective; the usefulness of explanations to actual applicants or scholarship administrators has not yet been established through a user study.
+**Important methodological distinction:** this 500-profile cohort exercise does not call the scikit-fuzzy inference engine from the preceding section. It uses a separate weighted-sum scoring function. It should therefore be described as a synthetic weighted-score scenario, not as a direct evaluation of the fuzzy rule-based engine or a fuzzy-AHP optimisation.
 
-## Repository contents
+## Reported synthetic cohort results
 
-This repository contains thesis-related research materials and implementation artefacts. Consult the files in the repository for the specific notebooks, source files, diagrams, tests, and deployment configuration available in this version.
+The saved notebook output reports the following results for the separate weighted-score exercise:
 
-## Reproducibility
+| Cohort | Applicants | Legacy GPA passes | Legacy pass rate | Weighted-score passes | Weighted-score pass rate |
+|---|---:|---:|---:|---:|---:|
+| Alpha | 350 | 349 | 99.7% | 3 | 0.9% |
+| Beta | 150 | 57 | 38.0% | 130 | 86.7% |
 
-The experiments use synthetic data. Before reproducing or comparing results, inspect the relevant notebook or script to identify its configuration, random seeds, dependencies, and evaluation procedure. Reported thesis results should not be treated as independently reproduced unless the corresponding run can be executed and its outputs verified.
+The notebook reports 74 Beta profiles that fail the GPA threshold but pass the weighted-score threshold. Their mean GPA is 2.70, mean financial-need score is 86.5, mean recommendation score is 82.2, and mean weighted score is 76.7.
 
-A complete reproducibility release should specify:
+These outcomes are generated by the chosen synthetic distributions and scoring thresholds. They are not evidence that the proposed method would produce these rates in a real applicant population. The very low Alpha pass rate under the weighted-score threshold also illustrates that the chosen score and cut-off require further calibration and critical evaluation.
 
-1. Python and package versions.
-2. Exact commands and entry points for each experiment.
-3. Random seeds and synthetic-data generation settings.
-4. Membership-function parameters, rule base, and criterion weights.
-5. Baseline definitions and metric calculations.
-6. Test commands and expected outputs.
+## What this prototype currently demonstrates
 
-## Limitations
+- Construction of a Mamdani-style fuzzy control system using scikit-fuzzy.
+- Use of overlapping membership functions and a small, explicit rule base.
+- A Monte Carlo run over synthetic applicant attributes, with incomplete successful processing in the saved output.
+- A separate synthetic cohort scenario comparing a GPA cut-off with a fixed weighted arithmetic score.
 
-- The evaluation uses synthetic rather than institutional scholarship data.
-- Criterion weights are fixed in the evaluated configuration.
-- The rule base and criteria represent a simplified model of a complex allocation process.
-- Strategic or biased recommendation evidence has not been fully tested.
-- No deployment in a real scholarship programme or evaluation with applicants and decision-makers is claimed.
-- This project does not certify compliance with GDPR, the EU AI Act, or any other legal framework.
+## Limitations and next steps
+
+- The fuzzy simulation currently processes 950 of 1,000 generated profiles; the cause of the 50 failed cases needs to be diagnosed and handled explicitly.
+- The 500-case cohort analysis uses a weighted arithmetic score, not the fuzzy inference engine. The two approaches should be integrated or clearly maintained as separate experiments.
+- The weights in the cohort scoring exercise are assigned constants; the notebook does not implement a Fuzzy AHP derivation procedure.
+- The ten-rule fuzzy system is a compact prototype and does not yet demonstrate a complete, systematically validated rule base.
+- The notebook does not itself demonstrate a deployed API, database integration, Kubernetes deployment, or automated test suite.
+- The synthetic cohorts encode different distributions by construction; the resulting group differences are scenario outcomes, not causal evidence or a fairness guarantee.
+- Robustness to manipulated recommendations, alternative cohort distributions, missing inputs, and uncertainty in the weights requires further evaluation.
+- No legal compliance assessment is performed.
 
 ## Research directions
 
-Potential next steps include sensitivity analysis of criterion weights, robustness tests under changes in input distributions, subgroup-focused evaluation, assessment of recommendation manipulation, and user studies examining whether explanations are understandable and useful.
+Potential next steps include debugging and testing the failed fuzzy simulations, unifying the two computational paths, documenting rule coverage, performing sensitivity analysis on membership-function parameters and weights, and evaluating multiple synthetic scenarios. A later study could also assess whether explanations are understandable to applicants and decision-makers.
 
 ## Citation
 
-If you use this work, cite the associated MSc thesis:
-
-* A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment.
-* University of Europe for Applied Sciences, 2026.
+*A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment.* MSc thesis, University of Europe for Applied Sciences, 2026.
 
 ## Author
 
