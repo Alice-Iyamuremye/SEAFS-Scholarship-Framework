@@ -1,143 +1,54 @@
-"""SEAFS research prototype: weighted compensatory fuzzy inference.
-
-Criterion weights are fixed configuration values from the thesis. This module
-does not calculate Fuzzy AHP pairwise comparisons.
+"""Notebook-aligned 10-rule Mamdani fuzzy inference implementation.
+This is not a reconstruction of the thesis appendix's 25-rule design.
+The notebook does not apply the thesis's fixed criterion weights.
 """
-from __future__ import annotations
-from dataclasses import dataclass
-from itertools import product
-from typing import Dict, Tuple
 import numpy as np
-
-CRITERIA_WEIGHTS = {"gpa": 0.30, "financial_need": 0.50, "recommendations": 0.20}
-LEVELS = ("Low", "Medium", "High")
-LEVEL_VALUES = {"Low": 0.0, "Medium": 0.5, "High": 1.0}
-
-def trimf(x: np.ndarray, abc: Tuple[float, float, float]) -> np.ndarray:
-    a, b, c = abc
-    x = np.asarray(x, dtype=float)
-    y = np.zeros_like(x)
-    if b > a:
-        m = (x >= a) & (x <= b)
-        y[m] = (x[m] - a) / (b - a)
-    else:
-        y[x == b] = 1.0
-    if c > b:
-        m = (x >= b) & (x <= c)
-        y[m] = np.maximum(y[m], (c - x[m]) / (c - b))
-    else:
-        y[x == b] = 1.0
-    y[x == b] = 1.0
-    return np.clip(y, 0.0, 1.0)
-
-def trapmf(x: np.ndarray, abcd: Tuple[float, float, float, float]) -> np.ndarray:
-    a, b, c, d = abcd
-    x = np.asarray(x, dtype=float)
-    y = np.zeros_like(x)
-    if b > a:
-        m = (x >= a) & (x < b)
-        y[m] = (x[m] - a) / (b - a)
-    y[(x >= b) & (x <= c)] = 1.0
-    if d > c:
-        m = (x > c) & (x <= d)
-        y[m] = (d - x[m]) / (d - c)
-    return np.clip(y, 0.0, 1.0)
-
-def _membership(value: float, name: str) -> float:
-    x = np.array([value], dtype=float)
-    if name == "Low":
-        return float(trapmf(x, (0, 0, 40, 60))[0])
-    if name == "Medium":
-        return float(trimf(x, (40, 60, 80))[0])
-    if name == "High":
-        return float(trapmf(x, (60, 80, 100, 100))[0])
-    raise ValueError(f"Unknown linguistic term: {name}")
-
-@dataclass(frozen=True)
-class SEAFSResult:
-    score: float
-    decision: str
-    rule_trace: Tuple[dict, ...]
-    memberships: Dict[str, Dict[str, float]]
-
-class SEAFSEngine:
-    """Three-input fuzzy inference with a complete 3x3x3 rule base.
-
-    Rule firing uses a weighted geometric conjunction of antecedent
-    memberships. Consequents are clipped, aggregated by maximum, and
-    defuzzified using a discrete centroid. This is an explicit weighted
-    fuzzy-AND design, not canonical unweighted min-AND Mamdani inference.
-    """
-    def __init__(self, weights: Dict[str, float] | None = None, step: float = 1.0):
-        self.weights = dict(weights or CRITERIA_WEIGHTS)
-        if set(self.weights) != set(CRITERIA_WEIGHTS):
-            raise ValueError("Weights must define all three criteria.")
-        if any((not np.isfinite(v) or v <= 0) for v in self.weights.values()):
-            raise ValueError("All criterion weights must be positive and finite.")
-        total = sum(self.weights.values())
-        self.weights = {k: v / total for k, v in self.weights.items()}
-        if step <= 0 or step > 1:
-            raise ValueError("step must be in (0, 1].")
-        self.universe = np.arange(0.0, 100.0 + step, step)
-        self.output_mfs = {
-            "Reject": trapmf(self.universe, (0, 0, 30, 50)),
-            "Waitlist": trimf(self.universe, (30, 50, 75)),
-            "Approve": trapmf(self.universe, (50, 75, 100, 100)),
-        }
-        self.rule_base = self._build_rules()
-        if len(self.rule_base) != 27:
-            raise RuntimeError("Expected a complete 3x3x3 rule base.")
-
-    def _build_rules(self):
-        rules = []
-        for gpa, need, recs in product(LEVELS, repeat=3):
-            support = (self.weights["gpa"] * LEVEL_VALUES[gpa]
-                       + self.weights["financial_need"] * LEVEL_VALUES[need]
-                       + self.weights["recommendations"] * LEVEL_VALUES[recs])
-            consequent = "Reject" if support < 0.35 else ("Waitlist" if support < 0.68 else "Approve")
-            rules.append({"gpa": gpa, "financial_need": need,
-                          "recommendations": recs, "consequent": consequent})
-        return tuple(rules)
-
-    def predict_one(self, gpa: float, financial_need: float, recommendations: float) -> SEAFSResult:
-        values = {"gpa": float(gpa), "financial_need": float(financial_need),
-                  "recommendations": float(recommendations)}
-        for key, value in values.items():
-            if not np.isfinite(value) or not 0 <= value <= 100:
-                raise ValueError(f"{key} must be finite and within [0, 100].")
-        memberships = {key: {level: _membership(value, level) for level in LEVELS}
-                       for key, value in values.items()}
-        aggregate = np.zeros_like(self.universe)
-        trace = []
-        for idx, rule in enumerate(self.rule_base, start=1):
-            activation = float(np.prod([
-                memberships[key][rule[key]] ** self.weights[key]
-                for key in self.weights
-            ]))
-            if activation <= 0:
-                continue
-            aggregate = np.maximum(
-                aggregate,
-                np.minimum(activation, self.output_mfs[rule["consequent"]])
-            )
-            trace.append({"rule": idx, "antecedents": dict(rule),
-                          "activation": activation})
-        area = float(np.sum(aggregate))
-        if area <= 0:
-            raise RuntimeError("No fuzzy rule fired; inspect membership coverage.")
-        score = float(np.sum(self.universe * aggregate) / area)
-        decision = "Reject" if score < 45 else ("Waitlist" if score < 68 else "Approve")
-        return SEAFSResult(score, decision, tuple(trace), memberships)
-
-    def predict(self, frame):
-        required = ["gpa_0_100", "financial_need", "recommendations"]
-        missing = [c for c in required if c not in frame.columns]
-        if missing:
-            raise ValueError(f"Missing input columns: {missing}")
-        rows = [self.predict_one(*row) for row in
-                frame[required].itertuples(index=False, name=None)]
-        out = frame.copy()
-        out["seafs_score"] = [r.score for r in rows]
-        out["seafs_decision"] = [r.decision for r in rows]
-        out["active_rule_count"] = [len(r.rule_trace) for r in rows]
-        return out
+RULES=[
+ ((('financial_need','High'),('gpa','High')),'Approve'),
+ ((('financial_need','High'),('gpa','Medium'),('recommendations','High')),'Approve'),
+ ((('financial_need','High'),('gpa','Medium'),('recommendations','Medium')),'Waitlist'),
+ ((('financial_need','High'),('gpa','Low'),('recommendations','High')),'Waitlist'),
+ ((('financial_need','High'),('gpa','Low'),('recommendations','Low')),'Reject'),
+ ((('financial_need','Low'),('gpa','High'),('recommendations','High')),'Approve'),
+ ((('financial_need','Low'),('gpa','High'),('recommendations','Medium')),'Approve'),
+ ((('financial_need','Medium'),('gpa','High')),'Approve'),
+ ((('gpa','Low'),('recommendations','Low')),'Reject'),
+ ((('financial_need','Medium'),('gpa','Low')),'Reject')]
+def trapmf(x,p):
+ a,b,c,d=p; x=np.asarray(x,float); y=np.zeros_like(x)
+ if b>a:
+  m=(x>=a)&(x<b); y[m]=(x[m]-a)/(b-a)
+ y[(x>=b)&(x<=c)]=1
+ if d>c:
+  m=(x>c)&(x<=d); y[m]=(d-x[m])/(d-c)
+ return np.clip(y,0,1)
+def trimf(x,p):
+ a,b,c=p; x=np.asarray(x,float); y=np.zeros_like(x)
+ if b>a:
+  m=(x>=a)&(x<=b); y[m]=(x[m]-a)/(b-a)
+ if c>b:
+  m=(x>=b)&(x<=c); y[m]=np.maximum(y[m],(c-x[m])/(c-b))
+ y[x==b]=1
+ return np.clip(y,0,1)
+def membership_parameters(shift=0):
+ d=float(shift)
+ return {'gpa':{'Low':(0,0,40+d,60+d),'Medium':(40+d,60+d,80+d),'High':(60+d,80+d,100,100)},
+ 'financial_need':{'Low':(0,0,30+d,50+d),'Medium':(30+d,50+d,70+d),'High':(50+d,70+d,100,100)},
+ 'recommendations':{'Low':(0,0,40+d,60+d),'Medium':(40+d,60+d,80+d),'High':(60+d,80+d,100,100)}}
+def predict_one(gpa,financial_need,recommendations,mf_shift=0):
+ vals={'gpa':float(gpa),'financial_need':float(financial_need),'recommendations':float(recommendations)}
+ for k,v in vals.items():
+  if not np.isfinite(v) or v<0 or v>100: raise ValueError(f'{k} must be finite and within [0, 100]')
+ p=membership_parameters(mf_shift); mem={}
+ for k,v in vals.items():
+  mem[k]={'Low':float(trapmf(np.array([v]),p[k]['Low'])[0]),'Medium':float(trimf(np.array([v]),p[k]['Medium'])[0]),'High':float(trapmf(np.array([v]),p[k]['High'])[0])}
+ u=np.arange(101); out={'Reject':trapmf(u,(0,0,30,50)),'Waitlist':trimf(u,(30,50,75)),'Approve':trapmf(u,(50,75,100,100))}
+ agg=np.zeros_like(u,dtype=float); trace=[]
+ for i,(ants,con) in enumerate(RULES,1):
+  fire=min(mem[k][term] for k,term in ants)
+  if fire>0:
+   agg=np.maximum(agg,np.minimum(fire,out[con])); trace.append({'rule':i,'antecedents':ants,'consequent':con,'activation':fire})
+ area=float(agg.sum())
+ if area<=0: return {'score':np.nan,'decision':'NoRuleFired','rule_trace':trace,'memberships':mem}
+ score=float((u*agg).sum()/area)
+ return {'score':score,'decision':'Reject' if score<45 else ('Waitlist' if score<68 else 'Approve'),'rule_trace':trace,'memberships':mem}
