@@ -43,11 +43,12 @@ The supplied pages do not assign outputs to these two combinations. The thesis's
 
 ## Important implementation clarification
 
-The listed rules use four consequent labels: Reject, Borderline, Waitlist, and Approve. The general thesis description elsewhere names only Reject, Waitlist, and Approve. The supplied appendix pages do not define a Borderline output membership function, its numerical support/breakpoints, or a final-decision mapping. Therefore this transcription is a documented rule matrix, not yet an executable 25-rule Mamdani model.
+The listed rules use four consequent labels: Reject, Borderline, Waitlist, and Approve. The general description in the final submitted thesis names only Reject, Waitlist, and Approve. The author has confirmed the interpretation that **Borderline is a human-review routing status**, not a fourth fuzzy output category. This interpretation is supported by the earlier thesis draft, which describes scores from 40 to below 70 as being held for committee review; however, those historical cut-offs are not silently substituted for the final thesis decision bands (Reject below 45, Waitlist 45–68, Approve at/above 68).
 
-Before implementing the 25-rule engine, specify:
-- the Borderline output membership function (shape and numerical parameters);
-- whether Borderline is a distinct final status or maps to another status;
-- how the two unlisted input combinations should be handled, if the intended model assigns them explicit outcomes.
+Accordingly, the 25-rule table is interpreted as a rule-level routing label: a Borderline consequent sends the case to human review rather than making an automated award/rejection decision. This is a documented interpretive reconstruction, not proof that the final submitted thesis fully specified this workflow. The 25-rule matrix still cannot be represented as a fully executable Mamdani model without the final model's numerical output membership functions/aggregation details and an explicit policy for the two unlisted antecedent combinations.
 
-The existing notebook-aligned 10-rule engine remains a separate implementation and must not be described as this 25-rule matrix.
+The two unlisted combinations remain unresolved:
+- GPA Low / Financial Need Low / Recommendations Medium.
+- GPA Low / Financial Need Medium / Recommendations Medium.
+
+Do not infer outcomes for these combinations. The existing notebook-aligned 10-rule engine remains a separate implementation and must not be described as this 25-rule matrix.
