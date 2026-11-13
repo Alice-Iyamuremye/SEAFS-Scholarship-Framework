@@ -93,7 +93,13 @@ python experiments/evaluate_synthetic_cohort.py
 python experiments/sensitivity_analysis.py
 ```
 
-## 10-rule versus 27-combination diagnostic comparison\n\nThe review branch includes `experiments/compare_10_vs_27_rule_models.py`, which evaluates both configurations over a deterministic 14 × 14 × 14 input grid (2,744 combinations). It reports decision-band agreement only where both models return scores. This is a specification diagnostic, not a representative applicant sample or fairness test. Differences reflect both rule coverage and the distinct output membership functions used in the experimental 27-combination variant.\n\nA GitHub Actions workflow (`.github/workflows/seafs-validation.yml`) is configured to run the tests and generate the comparison artefacts on pushes to `phd-portfolio-review` and pull requests to `main`. The workflow has been added, but its execution must be confirmed in the Actions tab before treating validation as passed.\n\n## Limitations and next steps
+## 10-rule versus 27-combination diagnostic comparison
+
+The review branch includes `experiments/compare_10_vs_27_rule_models.py`, which evaluates both configurations over a deterministic 14 × 14 × 14 input grid (2,744 combinations). The first completed comparison found that both models returned scores in 2,389 cases, with decision-band agreement of 54.2% among those jointly scored cases. The ten-rule model returned no score in 355 grid cases. The 27-combination model's score was higher by a mean of 10.9 points among jointly scored cases. These are diagnostics on a constructed grid, not a representative applicant sample or fairness test.
+
+The additional `experiments/diagnose_model_disagreements.py` script records the fired rule IDs, identifies activations involving inferred rules, records human-review flags, and generates a decision cross-tabulation and agreement-by-GPA summary. Its outputs are `reports/seafs_model_disagreement_diagnostics.csv` and `reports/seafs_model_disagreement_summary.md`.
+
+A GitHub Actions workflow (`.github/workflows/seafs-validation.yml`) runs the test suite, model comparison, and disagreement diagnostics on pushes to `phd-portfolio-review` and pull requests to `main`. The latest completed validation run is available [here](https://github.com/Alice-Iyamuremye/SEAFS-Scholarship-Framework/actions/runs/43454730707).\n\n## Limitations and next steps
 
 - The 25-rule thesis configuration has been transcribed, and the two omitted combinations have provisional, clearly labelled inferred outcomes. Numerical output membership functions and the exact placement of Fuzzy AHP weights still require specification before an executable 25-rule Mamdani variant can be claimed.
 - The ten-rule notebook basis can leave input combinations without a firing rule.
