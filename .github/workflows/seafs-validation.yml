@@ -20,6 +20,8 @@ jobs:
         run: pytest -q
       - name: Run deterministic model comparison
         run: python experiments/compare_10_vs_27_rule_models.py
+      - name: Run disagreement diagnostics
+        run: python experiments/diagnose_model_disagreements.py
       - name: Upload comparison outputs
         uses: actions/upload-artifact@v4
         with:
@@ -27,3 +29,5 @@ jobs:
           path: |
             reports/ten_vs_27_rule_grid_comparison.csv
             reports/ten_vs_27_rule_grid_summary.md
+            reports/seafs_model_disagreement_diagnostics.csv
+            reports/seafs_model_disagreement_summary.md
