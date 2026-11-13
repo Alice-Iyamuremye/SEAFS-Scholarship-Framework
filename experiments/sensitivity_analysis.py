@@ -1,5 +1,8 @@
 """One-factor-at-a-time sensitivity analysis for the 10-rule notebook FIS."""
 import pandas as pd
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from evaluate_synthetic_cohort import make_cohort,evaluate
 if __name__=='__main__':
  rows=[]; cohort=make_cohort(42)
