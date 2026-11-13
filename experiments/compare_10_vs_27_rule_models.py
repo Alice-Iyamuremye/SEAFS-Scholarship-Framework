@@ -1,7 +1,13 @@
 """Grid comparison of the notebook 10-rule model and provisional 27-rule reconstruction."""
 import csv
 from pathlib import Path
+import sys
 import numpy as np
+
+# Ensure top-level research modules are importable when run as a script.
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 from seafs_engine import predict_one as predict_10
 from seafs_25_rule_engine import predict_one as predict_27
 
