@@ -1,79 +1,106 @@
-# SEAFS: A Conceptual Fuzzy-Logic Framework for Scholarship Eligibility Assessment
+# SEAFS: Explainable Fuzzy-Logic Scholarship Decision Support
 
-**A research prototype exploring fuzzy inference and synthetic scholarship-eligibility scenarios.**
+**MSc research prototype exploring fuzzy inference for multi-criteria scholarship eligibility assessment.**
 
-This repository accompanies the MSc thesis *A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment*. The Kaggle notebook contains an initial fuzzy-inference experiment and a separate synthetic-cohort scoring exercise. These should be understood as distinct computational components, not as one fully integrated evaluation pipeline.
+This repository accompanies the thesis *A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment* (University of Europe for Applied Sciences, 2026).
 
-> **Research status:** The experiments use synthetic data. They do not establish real-world scholarship impact, validated fairness, or legal/regulatory compliance.
+> **Research status:** All cohort experiments use synthetic data. This repository does not establish real-world scholarship impact, validated fairness, or legal/regulatory compliance.
 
 ## Research motivation
 
-Rigid eligibility cut-offs can create abrupt decisions when applicants have multiple relevant characteristics. This project explores whether fuzzy membership functions and rule-based inference can represent gradual transitions in applicant attributes and make the decision logic more inspectable.
+Rigid eligibility cut-offs can create abrupt decisions when applicants have multiple relevant characteristics. SEAFS explores whether fuzzy membership functions and rule-based inference can represent gradual transitions in applicant attributes while making the reasoning more inspectable.
 
-## Notebook and implementation
+## Research artefacts
 
-The main notebook is available here:
+- [Original Kaggle notebook](https://www.kaggle.com/code/aliceiyamuremye/seafs)
+- Thesis: *A Conceptual Fuzzy Logic Framework for Fair and Transparent Scholarship Eligibility Assessment*
 
-- [Kaggle notebook: seafs](https://www.kaggle.com/code/aliceiyamuremye/seafs)
+### Original notebook: two distinct experiments
 
-### 1. Fuzzy-inference experiment
+The notebook must be read as containing two separate computational paths.
 
-The notebook uses Python, NumPy, pandas, Matplotlib, and scikit-fuzzy to construct a Mamdani-style control system with:
+**A. Mamdani fuzzy-inference experiment**
 
-- Three inputs: GPA, financial need, and recommendations, each represented on a 0–100 scale.
-- One output: eligibility, also represented on a 0–100 scale.
-- Overlapping triangular and trapezoidal membership functions for Low, Medium, and High input levels.
-- Three output membership categories: Reject, Waitlist, and Approve.
-- A rule base of ten explicit fuzzy rules.
-- Centroid defuzzification through the scikit-fuzzy control-system simulation.
+- Inputs: GPA, financial need, recommendations (each 0–100).
+- Overlapping trapezoidal/triangular membership functions.
+- Output categories: Reject, Waitlist, Approve.
+- Ten explicit rules encoded with scikit-fuzzy.
+- Mamdani min-AND rule firing, max aggregation, centroid defuzzification.
+- Monte Carlo simulation: 1,000 generated profiles, seed 42.
 
-The notebook runs a Monte Carlo simulation using 1,000 randomly generated applicant profiles (seed 42). Its saved output reports that **950 of 1,000 profiles were successfully processed**; 50 produced no usable output and were dropped from the resulting dataframe. This is an important implementation limitation that should be resolved before describing the simulation as a complete 1,000-case evaluation.
+The saved notebook output reports 950 of 1,000 profiles processed successfully; 50 yielded no usable output and were dropped. The failure cases need to be diagnosed rather than silently excluded.
 
-### 2. Synthetic cohort scoring exercise
+**B. Synthetic cohort weighted-score exercise**
 
-A separate notebook section generates a synthetic cohort of 500 applicants:
+The notebook separately generates 500 profiles (Alpha: 350; Beta: 150) and calculates a weighted arithmetic score using fixed weights of 0.50 for financial need, 0.30 for normalized GPA, and 0.20 for recommendations. This cohort code does **not** call the fuzzy inference engine and does not derive weights through Fuzzy AHP pairwise comparisons.
 
-- Cohort Alpha: 350 profiles, generated with higher average GPA and lower average financial need.
-- Cohort Beta: 150 profiles, generated with lower average GPA and higher average financial need.
+The original notebook reports:
+- Alpha: 349/350 pass the GPA threshold; 3/350 pass the weighted-score threshold.
+- Beta: 57/150 pass the GPA threshold; 130/150 pass the weighted-score threshold.
+- 74 Beta profiles fail the GPA threshold but pass the weighted-score threshold.
 
-This section then calculates a weighted arithmetic score using fixed weights of 0.50 for financial need, 0.30 for normalized GPA, and 0.20 for recommendations. It compares a GPA threshold baseline (GPA ≥ 3.0) with a score threshold (weighted score ≥ 70).
+These figures are outputs of the synthetic weighted-score scenario, not results of the Mamdani engine or evidence of fairness in a real applicant population.
 
-**Important methodological distinction:** this 500-profile cohort exercise does not call the scikit-fuzzy inference engine from the preceding section. It uses a separate weighted-sum scoring function. It should therefore be described as a synthetic weighted-score scenario, not as a direct evaluation of the fuzzy rule-based engine or a fuzzy-AHP optimisation.
+## Rule-base clarification
 
-## Reported synthetic cohort results
+The thesis Appendix A states that three inputs with three linguistic terms produce 27 possible combinations. It describes two combinations as logically inconsistent and says they are mapped to Reject/Waitlist respectively, leaving 25 effective rules. The appendix extract available in the thesis does not identify the two combinations; it lists the first ten rules and abbreviates the remaining fifteen.
 
-The saved notebook output reports the following results for the separate weighted-score exercise:
+The Kaggle notebook implements a condensed ten-rule basis. The thesis also notes that this condensation may lose granularity around boundary regions. This repository therefore distinguishes the thesis's described 25-rule design from the executable ten-rule notebook implementation. The two unspecified combinations are not invented here.
 
-| Cohort | Applicants | Legacy GPA passes | Legacy pass rate | Weighted-score passes | Weighted-score pass rate |
-|---|---:|---:|---:|---:|---:|
-| Alpha | 350 | 349 | 99.7% | 3 | 0.9% |
-| Beta | 150 | 57 | 38.0% | 130 | 86.7% |
+## Reproducible review implementation
 
-The notebook reports 74 Beta profiles that fail the GPA threshold but pass the weighted-score threshold. Their mean GPA is 2.70, mean financial-need score is 86.5, mean recommendation score is 82.2, and mean weighted score is 76.7.
+The review branch contains a Python implementation of the **ten-rule notebook FIS** and applies it to the same 500-profile synthetic cohort:
 
-These outcomes are generated by the chosen synthetic distributions and scoring thresholds. They are not evidence that the proposed method would produce these rates in a real applicant population. The very low Alpha pass rate under the weighted-score threshold also illustrates that the chosen score and cut-off require further calibration and critical evaluation.
+- `seafs_engine.py`: input membership functions, ten rules, Mamdani min-AND, max aggregation, centroid defuzzification and rule traces.
+- `experiments/evaluate_synthetic_cohort.py`: regenerates the Alpha/Beta cohort with NumPy seed 42 and evaluates each profile through the fuzzy engine.
+- `experiments/sensitivity_analysis.py`: varies input membership-function breakpoints by -5, 0, and +5 points and varies the administrative pass threshold from 60 to 80.
+- `tests/test_seafs_engine.py`: input validation, rule trace, and output checks.
+- `README_IMPLEMENTATION_NOTES.md`: methodology and limitations.
 
-## What this prototype currently demonstrates
+This is a reproducibility extension of the notebook, not a claim that the original Kaggle notebook already contains the new cohort evaluation.
 
-- Construction of a Mamdani-style fuzzy control system using scikit-fuzzy.
-- Use of overlapping membership functions and a small, explicit rule base.
-- A Monte Carlo run over synthetic applicant attributes, with incomplete successful processing in the saved output.
-- A separate synthetic cohort scenario comparing a GPA cut-off with a fixed weighted arithmetic score.
+### Sensitivity analysis: preliminary findings
+
+With the original synthetic cohort (seed 42), the ten-rule FIS, unshifted membership functions, and a 68-point pass threshold:
+
+| Cohort | Applicants | Legacy GPA pass rate | Fuzzy pass rate |
+|---|---:|---:|---:|
+| Alpha | 350 | 99.7% | 99.4% |
+| Beta | 150 | 38.0% | 68.7% |
+
+Two of the 500 profiles produced no firing rule in this implementation and are counted as missing, not as rejects or passes.
+
+Changing membership breakpoints and the pass threshold materially changes Beta's pass rate. For example, at a 68-point threshold, shifting the membership breakpoints uniformly by -5 points gives a Beta pass rate of 85.3%; shifting them by +5 points gives 54.0%. Alpha remains between 97.7% and 99.7% in these runs.
+
+This sensitivity is evidence that outcomes depend strongly on design parameters. It is not a reason to select parameters solely to equalise group pass rates. The cohorts are deliberately generated from different GPA, financial-need, and recommendation distributions; the resulting differences are scenario diagnostics, not demographic fairness measurements or causal evidence.
+
+Criterion-weight sensitivity is not reported for the ten-rule FIS because the notebook implementation does not apply the thesis's fixed AHP weights. That requires a separately specified and validated model variant.
+
+## Run the review implementation
+
+From the repository root:
+
+```bash
+pip install -r requirements.txt
+pytest -q
+python experiments/evaluate_synthetic_cohort.py
+python experiments/sensitivity_analysis.py
+```
 
 ## Limitations and next steps
 
-- The fuzzy simulation currently processes 950 of 1,000 generated profiles; the cause of the 50 failed cases needs to be diagnosed and handled explicitly.
-- The 500-case cohort analysis uses a weighted arithmetic score, not the fuzzy inference engine. The two approaches should be integrated or clearly maintained as separate experiments.
-- The weights in the cohort scoring exercise are assigned constants; the notebook does not implement a Fuzzy AHP derivation procedure.
-- The ten-rule fuzzy system is a compact prototype and does not yet demonstrate a complete, systematically validated rule base.
-- The notebook does not itself demonstrate a deployed API, database integration, Kubernetes deployment, or automated test suite.
-- The synthetic cohorts encode different distributions by construction; the resulting group differences are scenario outcomes, not causal evidence or a fairness guarantee.
-- Robustness to manipulated recommendations, alternative cohort distributions, missing inputs, and uncertainty in the weights requires further evaluation.
-- No legal compliance assessment is performed.
+- The 25-rule thesis configuration and its two omitted combinations need to be transcribed from a complete, authoritative rule table before implementing that variant.
+- The ten-rule notebook basis can leave input combinations without a firing rule.
+- The Monte Carlo notebook run processes only 950/1,000 profiles in its saved output.
+- The original 500-profile cohort experiment is a weighted-sum model, not the fuzzy engine.
+- The thesis reports criterion weights, but the notebook does not reproduce their Fuzzy AHP derivation or apply them in its ten-rule inference code.
+- Synthetic distributions, thresholds, membership boundaries, and rules require sensitivity analysis and stakeholder calibration.
+- Recommendation manipulation, missing inputs, alternate cohort distributions, and multiple random seeds require further study.
+- No real institutional deployment, user study, legal compliance assessment, or real-world fairness validation is claimed.
 
 ## Research directions
 
-Potential next steps include debugging and testing the failed fuzzy simulations, unifying the two computational paths, documenting rule coverage, performing sensitivity analysis on membership-function parameters and weights, and evaluating multiple synthetic scenarios. A later study could also assess whether explanations are understandable to applicants and decision-makers.
+Future work includes reconstructing the complete 25-rule configuration from the thesis source, testing rule coverage, investigating failed Monte Carlo cases, performing broader sensitivity and robustness analyses, validating criterion weights with domain experts, and studying whether explanations are useful to applicants and scholarship committees.
 
 ## Citation
 
@@ -83,40 +110,3 @@ Potential next steps include debugging and testing the failed fuzzy simulations,
 
 **Alice Iyamuremye**  
 Research interests: explainable and trustworthy AI, fuzzy decision-support systems, algorithmic fairness, and robust machine learning.
-
-
-## 3. Unified fuzzy-engine implementation (review branch)
-
-A separate implementation is being developed in this review branch so that synthetic cohort cases can be evaluated by the same fuzzy engine used for individual predictions:
-
-- `seafs_engine.py`: membership functions, complete 27-combination rule base, weighted rule activation, rule trace, and centroid output.
-- `experiments/evaluate_synthetic_cohort.py`: recreates the Alpha/Beta synthetic cohort using seed 42 and evaluates every profile through the fuzzy engine.
-- `tests/test_seafs_engine.py`: input validation, rule coverage, weight normalization, and batch-prediction tests.
-- `README_IMPLEMENTATION_NOTES.md`: documents the methodological choices and limitations.
-
-This is an **exploratory replacement implementation**, not a claim that the original Kaggle notebook already contains these changes. The original notebook uses ten scikit-fuzzy rules for its Monte Carlo experiment and a separate weighted arithmetic score for its cohort exercise.
-
-The new implementation uses a 27-combination rule base because three linguistic levels across three inputs produce 3 × 3 × 3 = 27 combinations. The thesis's description of a 25-rule full factorial is inconsistent with that count and requires correction or a documented explanation of omitted rules.
-
-### Preliminary cohort diagnostic
-
-Using the original synthetic distributions and the new fuzzy engine, the review-branch evaluation produces:
-
-| Cohort | Applicants | Legacy GPA passes | Fuzzy-engine passes | Fuzzy pass rate |
-|---|---:|---:|---:|---:|
-| Alpha | 350 | 349 | 5 | 1.4% |
-| Beta | 150 | 57 | 144 | 96.0% |
-
-The resulting fuzzy pass-rate difference is **94.6 percentage points**. This is not a fairness improvement. It is a diagnostic showing that the current membership functions, rule mapping, criterion weights, and approval threshold produce highly different outcomes for the two deliberately different synthetic distributions. These parameters need principled calibration and sensitivity analysis before any claim about fairness or suitability can be made.
-
-The fixed criterion weights are carried over from the thesis as configuration values. The current implementation does not compute Fuzzy AHP pairwise comparisons, and its weighted geometric rule activation is an explicitly specified weighted fuzzy-AND design rather than canonical unweighted min-AND Mamdani inference.
-
-Run the review implementation with:
-
-```bash
-pip install -r requirements.txt
-pytest -q
-python experiments/evaluate_synthetic_cohort.py
-```
-
-Do not treat these preliminary outputs as final thesis results. The review implementation has not yet been reconciled with the Kaggle notebook or validated with domain experts.
